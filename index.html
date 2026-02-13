@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UCU Project Memory</title>
+<style>
+  /* Password gate */
+  .gate {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+  }
+  .gate h1 { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+  .gate .gate-sub { color: #8b949e; font-size: 13px; margin-bottom: 24px; }
+  .gate-input {
+    padding: 12px 18px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    color: #e6edf3;
+    font-size: 16px;
+    width: 260px;
+    text-align: center;
+    outline: none;
+  }
+  .gate-input:focus { border-color: #58a6ff; }
+  .gate-input::placeholder { color: #484f58; }
+  .gate-error {
+    color: #f85149;
+    font-size: 13px;
+    margin-top: 10px;
+    min-height: 20px;
+  }
+  .app { display: none; }
+  .app.unlocked { display: block; }
+  .gate.hidden { display: none; }
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2129;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --pending-accent: #d29922;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 40px 0 24px;
+  }
+  .header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .header .subtitle {
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  .stats-row {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin: 16px 0 28px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .stats-row span { white-space: nowrap; }
+  .stats-row strong { color: var(--text); font-weight: 600; }
+
+  /* Search */
+  .search-wrap {
+    position: relative;
+    max-width: 560px;
+    margin: 0 auto 32px;
+  }
+  .search-box {
+    width: 100%;
+    padding: 14px 44px 14px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .search-box:focus {
+    border-color: var(--accent);
+  }
+  .search-box::placeholder {
+    color: var(--text-muted);
+  }
+  .search-clear {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: var(--border);
+    color: var(--text-muted);
+    font-size: 14px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .search-clear:hover {
+    background: #484f58;
+    color: var(--text);
+  }
+  .search-wrap.has-query .search-clear {
+    display: flex;
+  }
+
+  /* Landing view */
+  .landing { }
+  .landing.hidden { display: none; }
+
+  /* Pending section */
+  .pending-section {
+    margin-bottom: 36px;
+  }
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--pending-accent);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .pending-card {
+    background: var(--surface);
+    border: 1px solid #4d3800;
+    border-left: 3px solid var(--pending-accent);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .pending-header {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .pending-badge {
+    background: var(--pending-accent) !important;
+    color: #fff !important;
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .pending-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .pending-summary {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .pending-source {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    opacity: 0.7;
+  }
+
+  /* Browse section */
+  .browse-section {
+    margin-top: 8px;
+  }
+  .browse-title {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Domain accordion */
+  .domain-section {
+    margin-bottom: 4px;
+  }
+  .domain-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.1s;
+    user-select: none;
+  }
+  .domain-header:hover {
+    background: var(--surface2);
+  }
+  .domain-section.open .domain-header {
+    border-radius: 8px 8px 0 0;
+    border-bottom-color: transparent;
+  }
+  .domain-icon { font-size: 16px; }
+  .domain-label {
+    font-size: 14px;
+    font-weight: 600;
+    flex: 1;
+  }
+  .domain-count {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--bg);
+    padding: 1px 8px;
+    border-radius: 10px;
+  }
+  .domain-chevron {
+    font-size: 10px;
+    color: var(--text-muted);
+    transition: transform 0.15s;
+  }
+  .domain-section.open .domain-chevron {
+    transform: rotate(180deg);
+  }
+  .domain-body {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 4px 0;
+  }
+  .domain-section.open .domain-body {
+    display: block;
+  }
+
+  /* Browse rows inside domain */
+  .browse-row {
+    border-bottom: 1px solid var(--border);
+  }
+  .browse-row:last-child { border-bottom: none; }
+  .browse-row-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .browse-row-header:hover {
+    background: var(--surface2);
+  }
+  .browse-row-title {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .chevron {
+    font-size: 8px;
+    color: var(--text-muted);
+    transition: transform 0.15s;
+  }
+  .browse-row.expanded .chevron {
+    transform: rotate(180deg);
+  }
+  .browse-row-detail {
+    display: none;
+    padding: 4px 14px 12px 14px;
+    margin-left: 48px;
+  }
+  .browse-row.expanded .browse-row-detail {
+    display: block;
+  }
+  .browse-row-detail p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .detail-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    opacity: 0.7;
+  }
+
+  /* Search results view */
+  .search-results { display: none; }
+  .search-results.active { display: block; }
+  .search-results-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .search-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    transition: border-color 0.15s;
+  }
+  .search-card:hover {
+    border-color: var(--accent);
+  }
+  .search-card.hidden {
+    display: none;
+  }
+  .card-header {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+  .card-summary {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .card-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 8px;
+    opacity: 0.7;
+  }
+
+  /* Shared */
+  .decision-id {
+    font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .badge {
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .domain-pill {
+    background: var(--border);
+    color: var(--text-muted);
+  }
+  .search-hint {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 24px;
+    font-size: 14px;
+  }
+  .result-count {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <h1>UCU Project Memory</h1>
+  <div class="gate-sub">Team access only</div>
+  <input type="password" class="gate-input" id="gate-input"
+         placeholder="Enter password" autofocus>
+  <div class="gate-error" id="gate-error"></div>
+</div>
+
+<div class="app" id="app">
+
+<div class="header">
+  <h1>UCU Project Memory</h1>
+  <div class="subtitle">48 decisions tracked &middot; Updated 2026-02-13 09:31</div>
+</div>
+
+<div class="search-wrap" id="search-wrap">
+  <input type="text" class="search-box" id="search"
+         placeholder="What did we decide about...?" autofocus>
+  <button class="search-clear" id="search-clear" title="Clear search">&times;</button>
+</div>
+
+<!-- LANDING VIEW: shown when not searching -->
+<div class="landing" id="landing">
+
+  <div class="pending-section">
+    <div class="section-title">Needs Team Lock (3)</div>
+    
+        <div class="pending-card">
+            <div class="pending-header">
+                <span class="decision-id">DEC-020</span>
+                <span class="badge pending-badge">NEEDS TEAM LOCK</span>
+            </div>
+            <div class="pending-title">Evolving Language Across Pilot (Recommended, Pre-Meeting)</div>
+            <div class="pending-summary">Recommended Option C from Creative Decisions Brief: Start pilot nearly wordless (grunts, touches, gestures). By midpoint ~10 words emerge. By end ~20 words. Language development IS the story of becoming human. Still needs team lock — may evolve given DEC-018 (no subtitles) and DEC-012 (Life Carriers as characters fill narrative gap).</div>
+            <div class="pending-source">Session 18 / Creative Decisions Brief</div>
+        </div>
+        <div class="pending-card">
+            <div class="pending-header">
+                <span class="decision-id">DEC-028</span>
+                <span class="badge pending-badge">NEEDS TEAM LOCK</span>
+            </div>
+            <div class="pending-title">Cold Open with the Storm (Episode 1 Opening)</div>
+            <div class="pending-summary">Episode 1 opens in media res with storm-night decision. Visceral, cinematic, emotionally immediate. Recommended approach from 17 sessions of development. Still needs team lock at Writers Room.</div>
+            <div class="pending-source">Session 5 / Creative Decisions Brief</div>
+        </div>
+        <div class="pending-card">
+            <div class="pending-header">
+                <span class="decision-id">DEC-030</span>
+                <span class="badge pending-badge">NEEDS TEAM LOCK</span>
+            </div>
+            <div class="pending-title">Pilot Runtime: 50-55 Minutes</div>
+            <div class="pending-summary">Recommended 50-55 minutes. Prestige pilot standard (GoT pilot was 62 min). Room to breathe in key emotional moments. Emotionally complete, narratively open. ~50-55 screenplay pages. Needs team lock.</div>
+            <div class="pending-source">Session 18 / Creative Decisions Brief</div>
+        </div>
+  </div>
+
+  <div class="browse-section">
+    <div class="browse-title">Browse by Domain</div>
+    
+        <div class="domain-section">
+            <div class="domain-header" onclick="this.parentElement.classList.toggle('open')">
+                <span class="domain-icon">&#10038;</span>
+                <span class="domain-label">Celestial Frame</span>
+                <span class="domain-count">10</span>
+                <span class="domain-chevron">&#9660;</span>
+            </div>
+            <div class="domain-body">
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-008</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">80/20 Terrestrial/Celestial Balance</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Cosmic frame enhances human drama but never replaces it. ~80% terrestrial, ~20% celestial maximum. Celestial observers provide context and depth; Andon and Fonta remain protagonists.</p>
+                    <div class="detail-meta">2025-11-04 &middot; Session 1 / CLAUDE.md &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-009</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Celestial Perspective Must Earn Its Place</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>No formulaic bookends or scheduled interludes. Celestial perspective appears ONLY when: providing essential context we can&#x27;t show terrestrially, revealing something that deepens understanding, or marking genuine cosmic significance. Each episode finds its own rhythm.</p>
+                    <div class="detail-meta">2025-11-11 &middot; Session 12 &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-010</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Episode 1: Pure Terrestrial Until Final Reveal</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Episode 1 has NO celestial perspective until the final scenes. Audience experiences isolation and fear WITH Andon and Fonta. Celestial revelation comes as gift at end, not exposition at beginning. Creates dramatic irony for Episodes 2-3.</p>
+                    <div class="detail-meta">2025-11-08 &middot; Session 5 &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-011</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Dramatic Irony: They Feel Alone But Aren&#x27;t</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Twins feel ALONE (don&#x27;t understand why they&#x27;re different). Audience eventually learns they&#x27;re NOT alone (Life Carriers watching with joy). This dramatic irony deepens courage — they didn&#x27;t know they were watched, making their bravery more profound.</p>
+                    <div class="detail-meta">2025-11-06 &middot; Session 3 &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-012</span>
+                    <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                    <span class="browse-row-title">Life Carriers as Characters, Not Narrators</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Life Carriers should NOT be voiceover narrators doing documentary-style exposition. They should be characters who interact with each other, reacting in real time. Example: &quot;Look — the spark! They&#x27;re figuring it out!&quot; Their excitement becomes contagious for the audience.</p>
+                    <div class="detail-meta">2026-02-12 &middot; Writers Room #1 &middot; Team (Cheryl, Rick, Gabriel)</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-013</span>
+                    <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                    <span class="browse-row-title">Celestial &#x27;Control Room&#x27; — Spiritual NASA Mission Control</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Visual concept: spiritual NASA mission control. Not literal computers but elevated celestial workspace. Transparent screens/displays (like Minority Report). Celestial city visible in background. Could show other planets being monitored. Atmosphere: intimate, conversational, warm.</p>
+                    <div class="detail-meta">2026-02-12 &middot; Writers Room #1 (Cheryl&#x27;s concept) &middot; Team</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-014</span>
+                    <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                    <span class="browse-row-title">Celestial Beings: Shimmery Opalescent Light Forms</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Life Carriers have physical-but-luminous presence. Shafts of light with shimmery, opalescent quality (like inside an oyster shell) that shifts with movement. Shimmer changes as they gesture, point, react. Not cartoonish or campy — Tree of Life aesthetic.</p>
+                    <div class="detail-meta">2026-02-12 &middot; Writers Room #1 (Cheryl&#x27;s concept) &middot; Team</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-015</span>
+                    <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                    <span class="browse-row-title">Only Life Carriers Speak English</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Only Life Carriers speak English on screen. Other celestial beings (Christ Michael, Mother Spirit, student visitors) communicate visually or non-verbally. Thought Adjusters appear as sparks or &quot;tongues of fire&quot; — visual only, no speech.</p>
+                    <div class="detail-meta">2026-02-12 &middot; Writers Room #1 &middot; Team</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-016</span>
+                    <span class="badge" style="background:#cf222e;color:#ffffff">SUPERSEDED</span>
+                    <span class="browse-row-title">Single Life Carrier Narrator (Recommended Pre-Meeting)</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Pre-meeting recommendation: single Life Carrier narrator, warm but restrained, 3-4 brief appearances per episode. SUPERSEDED by DEC-012 (Writers Room decided Life Carriers should be interactive characters, not a single narrator).</p>
+                    <div class="detail-meta">2026-02-09 &middot; Session 18 / Creative Decisions Brief &middot; Gabriel + Claude</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-017</span>
+                    <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                    <span class="browse-row-title">Other Celestial Characters — Brief Appearances</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Beyond Life Carriers: Christ Michael may react briefly at God-consciousness moment. Local Mother Spirit same. Student visitors (mentioned in Papers) could pop in. No midwayers at this point in timeline (arrive with Caligastia).</p>
+                    <div class="detail-meta">2026-02-12 &middot; Writers Room #1 &middot; Team</div>
+                </div>
+            </div></div>
+        </div>
+        <div class="domain-section">
+            <div class="domain-header" onclick="this.parentElement.classList.toggle('open')">
+                <span class="domain-icon">&#9998;</span>
+                <span class="domain-label">Language</span>
+                <span class="domain-count">4</span>
+                <span class="domain-chevron">&#9660;</span>
+            </div>
+            <div class="domain-body">
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-018</span>
+                    <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                    <span class="browse-row-title">No Subtitles</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>No subtitles for Andon and Fonta&#x27;s communication. Would distract from body language, which is the primary storytelling vehicle. Life Carriers speaking English fills the narrative gap without forcing unnatural dialogue.</p>
+                    <div class="detail-meta">2026-02-12 &middot; Writers Room #1 &middot; Team</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-019</span>
+                    <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                    <span class="browse-row-title">~50 Word Core Vocabulary</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Andon and Fonta have approximately 50 words. This is a creative strength, not a limitation. Twin bond gives them extraordinary nonverbal communication — &quot;like a flock of birds flying together.&quot; Vocabulary document exists: andon-fonta-vocabulary-working.md (~48 concepts).</p>
+                    <div class="detail-meta">2026-02-12 &middot; Writers Room #1 / Session 13 &middot; Team</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-020</span>
+                    <span class="badge" style="background:#bf8700;color:#ffffff">PENDING</span>
+                    <span class="browse-row-title">Evolving Language Across Pilot (Recommended, Pre-Meeting)</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Recommended Option C from Creative Decisions Brief: Start pilot nearly wordless (grunts, touches, gestures). By midpoint ~10 words emerge. By end ~20 words. Language development IS the story of becoming human. Still needs team lock — may evolve given DEC-018 (no subtitles) and DEC-012 (Life Carriers as characters fill narrative gap).</p>
+                    <div class="detail-meta">2026-02-09 &middot; Session 18 / Creative Decisions Brief &middot; Gabriel + Claude</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-021</span>
+                    <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                    <span class="browse-row-title">Names: Sonta-an and Sonta-en</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Their names mean &quot;loved by mother&quot; (Sonta-an) and &quot;loved by father&quot; (Sonta-en). From the Papers. Part of the ~50 word vocabulary system.</p>
+                    <div class="detail-meta">2025-11-12 &middot; Session 13 &middot; Gabriel</div>
+                </div>
+            </div></div>
+        </div>
+        <div class="domain-section">
+            <div class="domain-header" onclick="this.parentElement.classList.toggle('open')">
+                <span class="domain-icon">&#9790;</span>
+                <span class="domain-label">Visual & Tone</span>
+                <span class="domain-count">5</span>
+                <span class="domain-chevron">&#9660;</span>
+            </div>
+            <div class="domain-body">
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-022</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Tonal DNA: The Revenant meets Arrival meets The Chosen</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Intimate epic. Grounded but transcendent. Revenant&#x27;s visceral survival and silence. Arrival&#x27;s patience with the unknown and emotional anchor for cosmic ideas. The Chosen&#x27;s earned emotional investment and characters-first approach.</p>
+                    <div class="detail-meta">2025-11-04 &middot; Session 1 / CLAUDE.md &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-023</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Visual Approach: Ancient Earth in Terrible Beauty</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Natural light, practical effects. Celestial realm luminous but never campy — Tree of Life not Thor. Pacing: patient but propulsive. Sound: environment &gt; music; silence is a tool.</p>
+                    <div class="detail-meta">2025-11-04 &middot; Session 1 / CLAUDE.md &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-024</span>
+                    <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                    <span class="browse-row-title">Violence: Real but Not Gratuitous</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Revenant level, not 300. Violence is real survival stakes, not spectacle. Spirituality felt, not stated — no sermons.</p>
+                    <div class="detail-meta">2026-02-09 &middot; Session 18 / Creative Decisions Brief &middot; Gabriel + Claude</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-025</span>
+                    <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                    <span class="browse-row-title">Quest for Fire as Additional Reference</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Quest for Fire added as fourth tonal reference. Borrow: trust in physicality, poetry of primitive survival, physical storytelling without modern language, fire as practical tool and spiritual metaphor.</p>
+                    <div class="detail-meta">2026-02-09 &middot; Session 18 / Creative Decisions Brief &middot; Gabriel + Claude</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-026</span>
+                    <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                    <span class="browse-row-title">Personality Visible in the Eyes</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>The human soul visible in Andon and Fonta&#x27;s eyes vs. the &quot;half-baked&quot; blank look of their primate relatives. Camera must capture this distinction — it&#x27;s the visual proof of consciousness.</p>
+                    <div class="detail-meta">2026-02-12 &middot; Writers Room #1 &middot; Team</div>
+                </div>
+            </div></div>
+        </div>
+        <div class="domain-section">
+            <div class="domain-header" onclick="this.parentElement.classList.toggle('open')">
+                <span class="domain-icon">&#9654;</span>
+                <span class="domain-label">Story Structure</span>
+                <span class="domain-count">11</span>
+                <span class="domain-chevron">&#9660;</span>
+            </div>
+            <div class="domain-body">
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-027</span>
+                    <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                    <span class="browse-row-title">Season 1: 8-10 Episodes, Three-Act Structure</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Act One: Awakening (Ep 1-3). Act Two: Building (Ep 4-6). Act Three: Legacy (Ep 7-9/10). Season question: &quot;What does it cost — and what does it give you — to be fully human?&quot;</p>
+                    <div class="detail-meta">2025-11-08 &middot; Session 5 &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-028</span>
+                    <span class="badge" style="background:#bf8700;color:#ffffff">PENDING</span>
+                    <span class="browse-row-title">Cold Open with the Storm (Episode 1 Opening)</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Episode 1 opens in media res with storm-night decision. Visceral, cinematic, emotionally immediate. Recommended approach from 17 sessions of development. Still needs team lock at Writers Room.</p>
+                    <div class="detail-meta">2025-11-08 &middot; Session 5 / Creative Decisions Brief &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-029</span>
+                    <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                    <span class="browse-row-title">Opening Montage: Amoeba to First Humans</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Rick proposed opening sequence showing evolution from amoeba to first humans. No dialogue, purely visual with dramatic music (think 2001). Starts with Life Carriers &quot;sprinkling fairy dust&quot; on tidal pools. ~90 seconds to 2 minutes. Cheryl&#x27;s note: don&#x27;t leap straight to God-consciousness — show twins&#x27; childhood first.</p>
+                    <div class="detail-meta">2026-02-12 &middot; Writers Room #1 (Rick&#x27;s proposal) &middot; Team</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-030</span>
+                    <span class="badge" style="background:#bf8700;color:#ffffff">PENDING</span>
+                    <span class="browse-row-title">Pilot Runtime: 50-55 Minutes</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Recommended 50-55 minutes. Prestige pilot standard (GoT pilot was 62 min). Room to breathe in key emotional moments. Emotionally complete, narratively open. ~50-55 screenplay pages. Needs team lock.</p>
+                    <div class="detail-meta">2026-02-09 &middot; Session 18 / Creative Decisions Brief &middot; Gabriel + Claude</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-031</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Episode 1 Dramatic Question</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>&quot;When you discover you&#x27;re fundamentally different, do you hide it or embrace it — even if it costs you everything you&#x27;ve known?&quot; Contemporary parallels: LGBTQ+ coming out, neurodivergent individuals, leaving abusive environments.</p>
+                    <div class="detail-meta">2025-11-08 &middot; Session 5 &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-032</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Episode 2: Victory Through Grit (Fire Discovery)</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Episode 2 = victory episode. Five-phase fire discovery structure over two months. Central question: &quot;Do you have grit to build when you fail 59 times?&quot; Partnership breaking point is the emotional core. Only ONE celestial scene, after fire breakthrough.</p>
+                    <div class="detail-meta">2025-11-11 &middot; Session 11-13 &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-033</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Episode 3: &#x27;The First Child&#x27; — Partnership Differentiation</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Central tension: partnership differentiation as pregnancy changes roles. &quot;They used to be equal in everything. Now she does what he cannot.&quot; Cliffhanger: baby&#x27;s crying attracts predators on first night. Two celestial appearances (mid-episode time jump + closing).</p>
+                    <div class="detail-meta">2025-11-13 &middot; Session 14 &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-034</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Three-Episode Arc: Courage → Grit → Growth</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Ep 1: Courage to choose yourself (identity, separation). Ep 2: Grit to build from nothing (innovation, perseverance). Ep 3: Growth to become more than you were (transformation, family). Together: Foundation of humanity = choice + creation + legacy.</p>
+                    <div class="detail-meta">2025-11-13 &middot; Session 14 &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-035</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Motif: &#x27;Then What?&#x27; — The Weight of Choice</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Every act of courage leads to &quot;Then what?&quot; Faith requires the first step, but building requires every step after. Weaves through entire series. Modern audiences paralyzed by choices — this says the uncertainty is normal.</p>
+                    <div class="detail-meta">2025-11-08 &middot; Session 5 &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-036</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Motif: Being Fully Human = Divine Partnership</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Show don&#x27;t preach. Moments of intuition that prove right. Stillness before action. Results beyond what two people alone could achieve. Partnership between them mirrors divine partnership. Celestial perspective shows guidance they can&#x27;t see.</p>
+                    <div class="detail-meta">2025-11-08 &middot; Session 5 &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-048</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Tree Home: Show Consequence Not Construction</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Morning after storm: they emerge DRY, tribe is SOAKED. Father&#x27;s jealous reaction visible. &quot;Start with the bank robbery, not the planning.&quot; Save process sequences for NEW discoveries (fire), not past accomplishments.</p>
+                    <div class="detail-meta">2025-11-06 &middot; Session 3 &middot; Gabriel</div>
+                </div>
+            </div></div>
+        </div>
+        <div class="domain-section">
+            <div class="domain-header" onclick="this.parentElement.classList.toggle('open')">
+                <span class="domain-icon">&#9899;</span>
+                <span class="domain-label">Characters</span>
+                <span class="domain-count">5</span>
+                <span class="domain-chevron">&#9660;</span>
+            </div>
+            <div class="domain-body">
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-037</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Andon and Fonta Fled at Age 11 (Not Late Teens)</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Papers 63:3.1-3.2 explicitly state they fled at age 11. Age 9: first serious discussion. Almost two years later: actual departure. This STRENGTHENS the story — children&#x27;s courage more extraordinary. Episode 1 outline revised accordingly.</p>
+                    <div class="detail-meta">2025-11-08 &middot; Session 7-8 (Agent discovery) &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-038</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Father Character Represents Entire Tribe</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>No need to track multiple tribe members. Father LOVES them deeply (will die of grief when they leave). Not the source of threat — the tribe is. Tragic figure caught between paternal love and tribal loyalty.</p>
+                    <div class="detail-meta">2025-11-04 &middot; Session 1 &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-039</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Sontad Born at Age 13 — Papers Timeline Honored</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Papers 63:3.1: Sontad born when they were ~13. Episodes 2-3 cover the ~2 years between flight (age 11) and first child. 18 months from Episode 2 ending to birth.</p>
+                    <div class="detail-meta">2025-11-13 &middot; Session 14 &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-040</span>
+                    <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                    <span class="browse-row-title">Intelligence Shown Through Visual Contrast</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Show Andon and Fonta&#x27;s superior intelligence visually: hafted weapon (tool-making), teaching failure (primate can&#x27;t replicate), storm/shelter contrast (they&#x27;re dry, tribe is soaked), personality in the eyes. Never tell — always show the cognitive gap.</p>
+                    <div class="detail-meta">2026-02-12 &middot; Writers Room #1 &middot; Team</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-041</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Pregnancy/Birth Approach: PG-13, Faces and Emotion</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Birth is substantial but not graphic. Focus on faces and emotion. Appropriate for family viewing. &quot;I do want to spend some time on this. This is a momentous event.&quot; — Gabriel. River bathing realization scene for pregnancy discovery.</p>
+                    <div class="detail-meta">2025-11-13 &middot; Session 14 &middot; Gabriel</div>
+                </div>
+            </div></div>
+        </div>
+        <div class="domain-section">
+            <div class="domain-header" onclick="this.parentElement.classList.toggle('open')">
+                <span class="domain-icon">&#9733;</span>
+                <span class="domain-label">Strategy</span>
+                <span class="domain-count">7</span>
+                <span class="domain-chevron">&#9660;</span>
+            </div>
+            <div class="domain-body">
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-001</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Focus on Part Three Only</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Adapting only Part Three (History of Urantia) of the Urantia Book. Parts One and Two lack protagonist-driven drama. Part Four (Jesus) handled separately by other projects.</p>
+                    <div class="detail-meta">2025-11-04 &middot; Session 1 / CLAUDE.md &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-002</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Seven-Season Arc Structure</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Seven-season arc covering major planetary interventions. Season One (Andon &amp; Fonta) developed first as proof of concept. Follows The Chosen model: comprehensive planning, focused execution.</p>
+                    <div class="detail-meta">2025-11-04 &middot; Session 1 / CLAUDE.md &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-003</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Real-Fantasy Positioning — &#x27;Inspired by True Events&#x27;</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Present as &quot;Inspired by True Events&quot; with unique twist — source material claims revelatory status. Acknowledge explicitly rather than hiding it. Dramatic interpretation of revelation that serves truth through creative storytelling.</p>
+                    <div class="detail-meta">2025-11-04 &middot; Session 1 / CLAUDE.md &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-004</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Mainstream Audience First</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Serve mainstream entertainment audiences first. Urantia community as passionate early adopters and theological advisors, not primary target audience. General audiences provide scale needed for production quality.</p>
+                    <div class="detail-meta">2025-11-04 &middot; Session 1 / CLAUDE.md &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-005</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Incremental Development with Strategic Testing</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Phased development: creative vision doc (done) → three-episode outline (done) → full season treatment (if warranted) → scripts. Each phase provides something concrete to share while maintaining flexibility.</p>
+                    <div class="detail-meta">2025-11-04 &middot; Session 1 / CLAUDE.md &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-006</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Copyright Holder: The Center for Unity</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Copyright holder for all UCU materials is &quot;The Center for Unity&quot; (Gabriel&#x27;s organization). Footer format: &quot;© 2025 The Center for Unity. All rights reserved.&quot;</p>
+                    <div class="detail-meta">2025-12-18 &middot; Session 17 &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-007</span>
+                    <span class="badge" style="background:#6e7781;color:#ffffff">DEFERRED</span>
+                    <span class="browse-row-title">Target Platform — Deferred</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Where the show lives (Netflix, Apple TV+, HBO, etc.) intentionally deferred until pilot draft is complete. Known: prestige television, streaming platform, serialized format.</p>
+                    <div class="detail-meta">2026-02-09 &middot; Session 18 / Creative Decisions Brief &middot; Team</div>
+                </div>
+            </div></div>
+        </div>
+        <div class="domain-section">
+            <div class="domain-header" onclick="this.parentElement.classList.toggle('open')">
+                <span class="domain-icon">&#9881;</span>
+                <span class="domain-label">Process</span>
+                <span class="domain-count">6</span>
+                <span class="domain-chevron">&#9660;</span>
+            </div>
+            <div class="domain-body">
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-042</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Two-Layer Source Material Rule</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Layer 1 (Sacred): Everything explicitly in the Papers is non-negotiable. Layer 2 (Creative License): Fill gaps freely BUT document every instance. Format: &quot;CREATIVE LICENSE: [what invented] to illuminate [what revealed].&quot; Standard: &quot;Could this plausibly have happened? We don&#x27;t know that it didn&#x27;t.&quot;</p>
+                    <div class="detail-meta">2025-11-08 &middot; Session 6 &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-043</span>
+                    <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                    <span class="browse-row-title">Prep-Then-Collaborate Method</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Claude does prep work privately (mine Papers, take notes, prepare questions). Leads Gabriel with targeted questions. Gabriel discovers and reacts emotionally. Synthesize together. WRONG: present finished analysis. RIGHT: ask what makes his heart race.</p>
+                    <div class="detail-meta">2025-11-05 &middot; Session 2 &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-044</span>
+                    <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                    <span class="browse-row-title">3+1 Team Model</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Cheryl Sherman (Lead Writer), Rick Warren (Story Consultant / Theological Anchor), Gabriel Rymberg (Producer / AI Operator), Claude (Development Engine). Weekly Thursday Zoom meetings, 60 minutes. Decide-build-review cycle.</p>
+                    <div class="detail-meta">2026-02-09 &middot; Session 18 &middot; Gabriel</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-045</span>
+                    <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                    <span class="browse-row-title">All Meetings Recorded and AI-Summarized</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>All Writers Room meetings recorded and transcribed (Otter.ai). AI summarizes transcripts so no one takes manual notes. Team exchanges materials asynchronously between meetings via email.</p>
+                    <div class="detail-meta">2026-02-12 &middot; Writers Room #1 &middot; Team</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-046</span>
+                    <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                    <span class="browse-row-title">Collaborative Spirit: No Ego About Ideas</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>&quot;I am not a person that cares one iota if you use my idea or not. It&#x27;s not important. The importance is doing a good script.&quot; — Cheryl. All ideas shared freely. Cheryl prefers receiving written materials to react to rather than working from scratch.</p>
+                    <div class="detail-meta">2026-02-12 &middot; Writers Room #1 (Cheryl) &middot; Team</div>
+                </div>
+            </div>
+            <div class="browse-row">
+                <div class="browse-row-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="decision-id">DEC-047</span>
+                    <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                    <span class="browse-row-title">Pilot Target: 50 Pages, 10 Weeks</span>
+                    <span class="chevron">&#9660;</span>
+                </div>
+                <div class="browse-row-detail">
+                    <p>Pilot screenplay target: ~50 pages over 10 weeks. Four phases: Phase 0 (Foundation Decisions), Phase 1 (Treatment/Beat Sheet), Phase 2 (Draft Pages), Phase 3 (Polish). Episode 1 &quot;The Awakening.&quot;</p>
+                    <div class="detail-meta">2026-02-09 &middot; Session 18 &middot; Gabriel</div>
+                </div>
+            </div></div>
+        </div>
+  </div>
+
+  <div class="stats-row">
+    <span><strong>25</strong> locked</span>
+    <span><strong>18</strong> active</span>
+    <span><strong>3</strong> pending</span>
+  </div>
+
+</div>
+
+<!-- SEARCH RESULTS VIEW: shown when searching -->
+<div class="search-results" id="search-results">
+  <div class="result-count" id="result-count"></div>
+  <div class="search-results-grid" id="search-grid">
+    
+        <div class="search-card hidden" data-search="dec-001 focus on part three only adapting only part three (history of urantia) of the urantia book. parts one and two lack protagonist-driven drama. part four (jesus) handled separately by other projects. session 1 / claude.md strategy strategy locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-001</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Strategy</span>
+            </div>
+            <h3 class="card-title">Focus on Part Three Only</h3>
+            <p class="card-summary">Adapting only Part Three (History of Urantia) of the Urantia Book. Parts One and Two lack protagonist-driven drama. Part Four (Jesus) handled separately by other projects.</p>
+            <div class="card-meta">2025-11-04 &middot; Session 1 / CLAUDE.md &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-002 seven-season arc structure seven-season arc covering major planetary interventions. season one (andon &amp;amp; fonta) developed first as proof of concept. follows the chosen model: comprehensive planning, focused execution. session 1 / claude.md strategy strategy locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-002</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Strategy</span>
+            </div>
+            <h3 class="card-title">Seven-Season Arc Structure</h3>
+            <p class="card-summary">Seven-season arc covering major planetary interventions. Season One (Andon &amp; Fonta) developed first as proof of concept. Follows The Chosen model: comprehensive planning, focused execution.</p>
+            <div class="card-meta">2025-11-04 &middot; Session 1 / CLAUDE.md &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-003 real-fantasy positioning — &amp;#x27;inspired by true events&amp;#x27; present as &amp;quot;inspired by true events&amp;quot; with unique twist — source material claims revelatory status. acknowledge explicitly rather than hiding it. dramatic interpretation of revelation that serves truth through creative storytelling. session 1 / claude.md strategy strategy locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-003</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Strategy</span>
+            </div>
+            <h3 class="card-title">Real-Fantasy Positioning — &#x27;Inspired by True Events&#x27;</h3>
+            <p class="card-summary">Present as &quot;Inspired by True Events&quot; with unique twist — source material claims revelatory status. Acknowledge explicitly rather than hiding it. Dramatic interpretation of revelation that serves truth through creative storytelling.</p>
+            <div class="card-meta">2025-11-04 &middot; Session 1 / CLAUDE.md &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-004 mainstream audience first serve mainstream entertainment audiences first. urantia community as passionate early adopters and theological advisors, not primary target audience. general audiences provide scale needed for production quality. session 1 / claude.md strategy strategy locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-004</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Strategy</span>
+            </div>
+            <h3 class="card-title">Mainstream Audience First</h3>
+            <p class="card-summary">Serve mainstream entertainment audiences first. Urantia community as passionate early adopters and theological advisors, not primary target audience. General audiences provide scale needed for production quality.</p>
+            <div class="card-meta">2025-11-04 &middot; Session 1 / CLAUDE.md &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-005 incremental development with strategic testing phased development: creative vision doc (done) → three-episode outline (done) → full season treatment (if warranted) → scripts. each phase provides something concrete to share while maintaining flexibility. session 1 / claude.md strategy strategy locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-005</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Strategy</span>
+            </div>
+            <h3 class="card-title">Incremental Development with Strategic Testing</h3>
+            <p class="card-summary">Phased development: creative vision doc (done) → three-episode outline (done) → full season treatment (if warranted) → scripts. Each phase provides something concrete to share while maintaining flexibility.</p>
+            <div class="card-meta">2025-11-04 &middot; Session 1 / CLAUDE.md &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-006 copyright holder: the center for unity copyright holder for all ucu materials is &amp;quot;the center for unity&amp;quot; (gabriel&amp;#x27;s organization). footer format: &amp;quot;© 2025 the center for unity. all rights reserved.&amp;quot; session 17 strategy strategy locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-006</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Strategy</span>
+            </div>
+            <h3 class="card-title">Copyright Holder: The Center for Unity</h3>
+            <p class="card-summary">Copyright holder for all UCU materials is &quot;The Center for Unity&quot; (Gabriel&#x27;s organization). Footer format: &quot;© 2025 The Center for Unity. All rights reserved.&quot;</p>
+            <div class="card-meta">2025-12-18 &middot; Session 17 &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-007 target platform — deferred where the show lives (netflix, apple tv+, hbo, etc.) intentionally deferred until pilot draft is complete. known: prestige television, streaming platform, serialized format. session 18 / creative decisions brief strategy strategy deferred team">
+            <div class="card-header">
+                <span class="decision-id">DEC-007</span>
+                <span class="badge" style="background:#6e7781;color:#ffffff">DEFERRED</span>
+                <span class="badge domain-pill">Strategy</span>
+            </div>
+            <h3 class="card-title">Target Platform — Deferred</h3>
+            <p class="card-summary">Where the show lives (Netflix, Apple TV+, HBO, etc.) intentionally deferred until pilot draft is complete. Known: prestige television, streaming platform, serialized format.</p>
+            <div class="card-meta">2026-02-09 &middot; Session 18 / Creative Decisions Brief &middot; Team</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-008 80/20 terrestrial/celestial balance cosmic frame enhances human drama but never replaces it. ~80% terrestrial, ~20% celestial maximum. celestial observers provide context and depth; andon and fonta remain protagonists. session 1 / claude.md celestial-frame celestial frame locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-008</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Celestial Frame</span>
+            </div>
+            <h3 class="card-title">80/20 Terrestrial/Celestial Balance</h3>
+            <p class="card-summary">Cosmic frame enhances human drama but never replaces it. ~80% terrestrial, ~20% celestial maximum. Celestial observers provide context and depth; Andon and Fonta remain protagonists.</p>
+            <div class="card-meta">2025-11-04 &middot; Session 1 / CLAUDE.md &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-009 celestial perspective must earn its place no formulaic bookends or scheduled interludes. celestial perspective appears only when: providing essential context we can&amp;#x27;t show terrestrially, revealing something that deepens understanding, or marking genuine cosmic significance. each episode finds its own rhythm. session 12 celestial-frame celestial frame locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-009</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Celestial Frame</span>
+            </div>
+            <h3 class="card-title">Celestial Perspective Must Earn Its Place</h3>
+            <p class="card-summary">No formulaic bookends or scheduled interludes. Celestial perspective appears ONLY when: providing essential context we can&#x27;t show terrestrially, revealing something that deepens understanding, or marking genuine cosmic significance. Each episode finds its own rhythm.</p>
+            <div class="card-meta">2025-11-11 &middot; Session 12 &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-010 episode 1: pure terrestrial until final reveal episode 1 has no celestial perspective until the final scenes. audience experiences isolation and fear with andon and fonta. celestial revelation comes as gift at end, not exposition at beginning. creates dramatic irony for episodes 2-3. session 5 celestial-frame celestial frame locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-010</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Celestial Frame</span>
+            </div>
+            <h3 class="card-title">Episode 1: Pure Terrestrial Until Final Reveal</h3>
+            <p class="card-summary">Episode 1 has NO celestial perspective until the final scenes. Audience experiences isolation and fear WITH Andon and Fonta. Celestial revelation comes as gift at end, not exposition at beginning. Creates dramatic irony for Episodes 2-3.</p>
+            <div class="card-meta">2025-11-08 &middot; Session 5 &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-011 dramatic irony: they feel alone but aren&amp;#x27;t twins feel alone (don&amp;#x27;t understand why they&amp;#x27;re different). audience eventually learns they&amp;#x27;re not alone (life carriers watching with joy). this dramatic irony deepens courage — they didn&amp;#x27;t know they were watched, making their bravery more profound. session 3 celestial-frame celestial frame locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-011</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Celestial Frame</span>
+            </div>
+            <h3 class="card-title">Dramatic Irony: They Feel Alone But Aren&#x27;t</h3>
+            <p class="card-summary">Twins feel ALONE (don&#x27;t understand why they&#x27;re different). Audience eventually learns they&#x27;re NOT alone (Life Carriers watching with joy). This dramatic irony deepens courage — they didn&#x27;t know they were watched, making their bravery more profound.</p>
+            <div class="card-meta">2025-11-06 &middot; Session 3 &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-012 life carriers as characters, not narrators life carriers should not be voiceover narrators doing documentary-style exposition. they should be characters who interact with each other, reacting in real time. example: &amp;quot;look — the spark! they&amp;#x27;re figuring it out!&amp;quot; their excitement becomes contagious for the audience. writers room #1 celestial-frame celestial frame active team (cheryl, rick, gabriel)">
+            <div class="card-header">
+                <span class="decision-id">DEC-012</span>
+                <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                <span class="badge domain-pill">Celestial Frame</span>
+            </div>
+            <h3 class="card-title">Life Carriers as Characters, Not Narrators</h3>
+            <p class="card-summary">Life Carriers should NOT be voiceover narrators doing documentary-style exposition. They should be characters who interact with each other, reacting in real time. Example: &quot;Look — the spark! They&#x27;re figuring it out!&quot; Their excitement becomes contagious for the audience.</p>
+            <div class="card-meta">2026-02-12 &middot; Writers Room #1 &middot; Team (Cheryl, Rick, Gabriel)</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-013 celestial &amp;#x27;control room&amp;#x27; — spiritual nasa mission control visual concept: spiritual nasa mission control. not literal computers but elevated celestial workspace. transparent screens/displays (like minority report). celestial city visible in background. could show other planets being monitored. atmosphere: intimate, conversational, warm. writers room #1 (cheryl&amp;#x27;s concept) celestial-frame celestial frame active team">
+            <div class="card-header">
+                <span class="decision-id">DEC-013</span>
+                <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                <span class="badge domain-pill">Celestial Frame</span>
+            </div>
+            <h3 class="card-title">Celestial &#x27;Control Room&#x27; — Spiritual NASA Mission Control</h3>
+            <p class="card-summary">Visual concept: spiritual NASA mission control. Not literal computers but elevated celestial workspace. Transparent screens/displays (like Minority Report). Celestial city visible in background. Could show other planets being monitored. Atmosphere: intimate, conversational, warm.</p>
+            <div class="card-meta">2026-02-12 &middot; Writers Room #1 (Cheryl&#x27;s concept) &middot; Team</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-014 celestial beings: shimmery opalescent light forms life carriers have physical-but-luminous presence. shafts of light with shimmery, opalescent quality (like inside an oyster shell) that shifts with movement. shimmer changes as they gesture, point, react. not cartoonish or campy — tree of life aesthetic. writers room #1 (cheryl&amp;#x27;s concept) celestial-frame celestial frame active team">
+            <div class="card-header">
+                <span class="decision-id">DEC-014</span>
+                <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                <span class="badge domain-pill">Celestial Frame</span>
+            </div>
+            <h3 class="card-title">Celestial Beings: Shimmery Opalescent Light Forms</h3>
+            <p class="card-summary">Life Carriers have physical-but-luminous presence. Shafts of light with shimmery, opalescent quality (like inside an oyster shell) that shifts with movement. Shimmer changes as they gesture, point, react. Not cartoonish or campy — Tree of Life aesthetic.</p>
+            <div class="card-meta">2026-02-12 &middot; Writers Room #1 (Cheryl&#x27;s concept) &middot; Team</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-015 only life carriers speak english only life carriers speak english on screen. other celestial beings (christ michael, mother spirit, student visitors) communicate visually or non-verbally. thought adjusters appear as sparks or &amp;quot;tongues of fire&amp;quot; — visual only, no speech. writers room #1 celestial-frame celestial frame active team">
+            <div class="card-header">
+                <span class="decision-id">DEC-015</span>
+                <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                <span class="badge domain-pill">Celestial Frame</span>
+            </div>
+            <h3 class="card-title">Only Life Carriers Speak English</h3>
+            <p class="card-summary">Only Life Carriers speak English on screen. Other celestial beings (Christ Michael, Mother Spirit, student visitors) communicate visually or non-verbally. Thought Adjusters appear as sparks or &quot;tongues of fire&quot; — visual only, no speech.</p>
+            <div class="card-meta">2026-02-12 &middot; Writers Room #1 &middot; Team</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-016 single life carrier narrator (recommended pre-meeting) pre-meeting recommendation: single life carrier narrator, warm but restrained, 3-4 brief appearances per episode. superseded by dec-012 (writers room decided life carriers should be interactive characters, not a single narrator). session 18 / creative decisions brief celestial-frame celestial frame superseded gabriel + claude">
+            <div class="card-header">
+                <span class="decision-id">DEC-016</span>
+                <span class="badge" style="background:#cf222e;color:#ffffff">SUPERSEDED</span>
+                <span class="badge domain-pill">Celestial Frame</span>
+            </div>
+            <h3 class="card-title">Single Life Carrier Narrator (Recommended Pre-Meeting)</h3>
+            <p class="card-summary">Pre-meeting recommendation: single Life Carrier narrator, warm but restrained, 3-4 brief appearances per episode. SUPERSEDED by DEC-012 (Writers Room decided Life Carriers should be interactive characters, not a single narrator).</p>
+            <div class="card-meta">2026-02-09 &middot; Session 18 / Creative Decisions Brief &middot; Gabriel + Claude</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-017 other celestial characters — brief appearances beyond life carriers: christ michael may react briefly at god-consciousness moment. local mother spirit same. student visitors (mentioned in papers) could pop in. no midwayers at this point in timeline (arrive with caligastia). writers room #1 celestial-frame celestial frame active team">
+            <div class="card-header">
+                <span class="decision-id">DEC-017</span>
+                <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                <span class="badge domain-pill">Celestial Frame</span>
+            </div>
+            <h3 class="card-title">Other Celestial Characters — Brief Appearances</h3>
+            <p class="card-summary">Beyond Life Carriers: Christ Michael may react briefly at God-consciousness moment. Local Mother Spirit same. Student visitors (mentioned in Papers) could pop in. No midwayers at this point in timeline (arrive with Caligastia).</p>
+            <div class="card-meta">2026-02-12 &middot; Writers Room #1 &middot; Team</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-018 no subtitles no subtitles for andon and fonta&amp;#x27;s communication. would distract from body language, which is the primary storytelling vehicle. life carriers speaking english fills the narrative gap without forcing unnatural dialogue. writers room #1 language-communication language active team">
+            <div class="card-header">
+                <span class="decision-id">DEC-018</span>
+                <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                <span class="badge domain-pill">Language</span>
+            </div>
+            <h3 class="card-title">No Subtitles</h3>
+            <p class="card-summary">No subtitles for Andon and Fonta&#x27;s communication. Would distract from body language, which is the primary storytelling vehicle. Life Carriers speaking English fills the narrative gap without forcing unnatural dialogue.</p>
+            <div class="card-meta">2026-02-12 &middot; Writers Room #1 &middot; Team</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-019 ~50 word core vocabulary andon and fonta have approximately 50 words. this is a creative strength, not a limitation. twin bond gives them extraordinary nonverbal communication — &amp;quot;like a flock of birds flying together.&amp;quot; vocabulary document exists: andon-fonta-vocabulary-working.md (~48 concepts). writers room #1 / session 13 language-communication language active team">
+            <div class="card-header">
+                <span class="decision-id">DEC-019</span>
+                <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                <span class="badge domain-pill">Language</span>
+            </div>
+            <h3 class="card-title">~50 Word Core Vocabulary</h3>
+            <p class="card-summary">Andon and Fonta have approximately 50 words. This is a creative strength, not a limitation. Twin bond gives them extraordinary nonverbal communication — &quot;like a flock of birds flying together.&quot; Vocabulary document exists: andon-fonta-vocabulary-working.md (~48 concepts).</p>
+            <div class="card-meta">2026-02-12 &middot; Writers Room #1 / Session 13 &middot; Team</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-020 evolving language across pilot (recommended, pre-meeting) recommended option c from creative decisions brief: start pilot nearly wordless (grunts, touches, gestures). by midpoint ~10 words emerge. by end ~20 words. language development is the story of becoming human. still needs team lock — may evolve given dec-018 (no subtitles) and dec-012 (life carriers as characters fill narrative gap). session 18 / creative decisions brief language-communication language pending gabriel + claude">
+            <div class="card-header">
+                <span class="decision-id">DEC-020</span>
+                <span class="badge" style="background:#bf8700;color:#ffffff">PENDING</span>
+                <span class="badge domain-pill">Language</span>
+            </div>
+            <h3 class="card-title">Evolving Language Across Pilot (Recommended, Pre-Meeting)</h3>
+            <p class="card-summary">Recommended Option C from Creative Decisions Brief: Start pilot nearly wordless (grunts, touches, gestures). By midpoint ~10 words emerge. By end ~20 words. Language development IS the story of becoming human. Still needs team lock — may evolve given DEC-018 (no subtitles) and DEC-012 (Life Carriers as characters fill narrative gap).</p>
+            <div class="card-meta">2026-02-09 &middot; Session 18 / Creative Decisions Brief &middot; Gabriel + Claude</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-021 names: sonta-an and sonta-en their names mean &amp;quot;loved by mother&amp;quot; (sonta-an) and &amp;quot;loved by father&amp;quot; (sonta-en). from the papers. part of the ~50 word vocabulary system. session 13 language-communication language active gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-021</span>
+                <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                <span class="badge domain-pill">Language</span>
+            </div>
+            <h3 class="card-title">Names: Sonta-an and Sonta-en</h3>
+            <p class="card-summary">Their names mean &quot;loved by mother&quot; (Sonta-an) and &quot;loved by father&quot; (Sonta-en). From the Papers. Part of the ~50 word vocabulary system.</p>
+            <div class="card-meta">2025-11-12 &middot; Session 13 &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-022 tonal dna: the revenant meets arrival meets the chosen intimate epic. grounded but transcendent. revenant&amp;#x27;s visceral survival and silence. arrival&amp;#x27;s patience with the unknown and emotional anchor for cosmic ideas. the chosen&amp;#x27;s earned emotional investment and characters-first approach. session 1 / claude.md visual-tone visual &amp; tone locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-022</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Visual & Tone</span>
+            </div>
+            <h3 class="card-title">Tonal DNA: The Revenant meets Arrival meets The Chosen</h3>
+            <p class="card-summary">Intimate epic. Grounded but transcendent. Revenant&#x27;s visceral survival and silence. Arrival&#x27;s patience with the unknown and emotional anchor for cosmic ideas. The Chosen&#x27;s earned emotional investment and characters-first approach.</p>
+            <div class="card-meta">2025-11-04 &middot; Session 1 / CLAUDE.md &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-023 visual approach: ancient earth in terrible beauty natural light, practical effects. celestial realm luminous but never campy — tree of life not thor. pacing: patient but propulsive. sound: environment &amp;gt; music; silence is a tool. session 1 / claude.md visual-tone visual &amp; tone locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-023</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Visual & Tone</span>
+            </div>
+            <h3 class="card-title">Visual Approach: Ancient Earth in Terrible Beauty</h3>
+            <p class="card-summary">Natural light, practical effects. Celestial realm luminous but never campy — Tree of Life not Thor. Pacing: patient but propulsive. Sound: environment &gt; music; silence is a tool.</p>
+            <div class="card-meta">2025-11-04 &middot; Session 1 / CLAUDE.md &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-024 violence: real but not gratuitous revenant level, not 300. violence is real survival stakes, not spectacle. spirituality felt, not stated — no sermons. session 18 / creative decisions brief visual-tone visual &amp; tone active gabriel + claude">
+            <div class="card-header">
+                <span class="decision-id">DEC-024</span>
+                <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                <span class="badge domain-pill">Visual & Tone</span>
+            </div>
+            <h3 class="card-title">Violence: Real but Not Gratuitous</h3>
+            <p class="card-summary">Revenant level, not 300. Violence is real survival stakes, not spectacle. Spirituality felt, not stated — no sermons.</p>
+            <div class="card-meta">2026-02-09 &middot; Session 18 / Creative Decisions Brief &middot; Gabriel + Claude</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-025 quest for fire as additional reference quest for fire added as fourth tonal reference. borrow: trust in physicality, poetry of primitive survival, physical storytelling without modern language, fire as practical tool and spiritual metaphor. session 18 / creative decisions brief visual-tone visual &amp; tone active gabriel + claude">
+            <div class="card-header">
+                <span class="decision-id">DEC-025</span>
+                <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                <span class="badge domain-pill">Visual & Tone</span>
+            </div>
+            <h3 class="card-title">Quest for Fire as Additional Reference</h3>
+            <p class="card-summary">Quest for Fire added as fourth tonal reference. Borrow: trust in physicality, poetry of primitive survival, physical storytelling without modern language, fire as practical tool and spiritual metaphor.</p>
+            <div class="card-meta">2026-02-09 &middot; Session 18 / Creative Decisions Brief &middot; Gabriel + Claude</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-026 personality visible in the eyes the human soul visible in andon and fonta&amp;#x27;s eyes vs. the &amp;quot;half-baked&amp;quot; blank look of their primate relatives. camera must capture this distinction — it&amp;#x27;s the visual proof of consciousness. writers room #1 visual-tone visual &amp; tone active team">
+            <div class="card-header">
+                <span class="decision-id">DEC-026</span>
+                <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                <span class="badge domain-pill">Visual & Tone</span>
+            </div>
+            <h3 class="card-title">Personality Visible in the Eyes</h3>
+            <p class="card-summary">The human soul visible in Andon and Fonta&#x27;s eyes vs. the &quot;half-baked&quot; blank look of their primate relatives. Camera must capture this distinction — it&#x27;s the visual proof of consciousness.</p>
+            <div class="card-meta">2026-02-12 &middot; Writers Room #1 &middot; Team</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-027 season 1: 8-10 episodes, three-act structure act one: awakening (ep 1-3). act two: building (ep 4-6). act three: legacy (ep 7-9/10). season question: &amp;quot;what does it cost — and what does it give you — to be fully human?&amp;quot; session 5 story-structure story structure active gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-027</span>
+                <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                <span class="badge domain-pill">Story Structure</span>
+            </div>
+            <h3 class="card-title">Season 1: 8-10 Episodes, Three-Act Structure</h3>
+            <p class="card-summary">Act One: Awakening (Ep 1-3). Act Two: Building (Ep 4-6). Act Three: Legacy (Ep 7-9/10). Season question: &quot;What does it cost — and what does it give you — to be fully human?&quot;</p>
+            <div class="card-meta">2025-11-08 &middot; Session 5 &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-028 cold open with the storm (episode 1 opening) episode 1 opens in media res with storm-night decision. visceral, cinematic, emotionally immediate. recommended approach from 17 sessions of development. still needs team lock at writers room. session 5 / creative decisions brief story-structure story structure pending gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-028</span>
+                <span class="badge" style="background:#bf8700;color:#ffffff">PENDING</span>
+                <span class="badge domain-pill">Story Structure</span>
+            </div>
+            <h3 class="card-title">Cold Open with the Storm (Episode 1 Opening)</h3>
+            <p class="card-summary">Episode 1 opens in media res with storm-night decision. Visceral, cinematic, emotionally immediate. Recommended approach from 17 sessions of development. Still needs team lock at Writers Room.</p>
+            <div class="card-meta">2025-11-08 &middot; Session 5 / Creative Decisions Brief &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-029 opening montage: amoeba to first humans rick proposed opening sequence showing evolution from amoeba to first humans. no dialogue, purely visual with dramatic music (think 2001). starts with life carriers &amp;quot;sprinkling fairy dust&amp;quot; on tidal pools. ~90 seconds to 2 minutes. cheryl&amp;#x27;s note: don&amp;#x27;t leap straight to god-consciousness — show twins&amp;#x27; childhood first. writers room #1 (rick&amp;#x27;s proposal) story-structure story structure active team">
+            <div class="card-header">
+                <span class="decision-id">DEC-029</span>
+                <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                <span class="badge domain-pill">Story Structure</span>
+            </div>
+            <h3 class="card-title">Opening Montage: Amoeba to First Humans</h3>
+            <p class="card-summary">Rick proposed opening sequence showing evolution from amoeba to first humans. No dialogue, purely visual with dramatic music (think 2001). Starts with Life Carriers &quot;sprinkling fairy dust&quot; on tidal pools. ~90 seconds to 2 minutes. Cheryl&#x27;s note: don&#x27;t leap straight to God-consciousness — show twins&#x27; childhood first.</p>
+            <div class="card-meta">2026-02-12 &middot; Writers Room #1 (Rick&#x27;s proposal) &middot; Team</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-030 pilot runtime: 50-55 minutes recommended 50-55 minutes. prestige pilot standard (got pilot was 62 min). room to breathe in key emotional moments. emotionally complete, narratively open. ~50-55 screenplay pages. needs team lock. session 18 / creative decisions brief story-structure story structure pending gabriel + claude">
+            <div class="card-header">
+                <span class="decision-id">DEC-030</span>
+                <span class="badge" style="background:#bf8700;color:#ffffff">PENDING</span>
+                <span class="badge domain-pill">Story Structure</span>
+            </div>
+            <h3 class="card-title">Pilot Runtime: 50-55 Minutes</h3>
+            <p class="card-summary">Recommended 50-55 minutes. Prestige pilot standard (GoT pilot was 62 min). Room to breathe in key emotional moments. Emotionally complete, narratively open. ~50-55 screenplay pages. Needs team lock.</p>
+            <div class="card-meta">2026-02-09 &middot; Session 18 / Creative Decisions Brief &middot; Gabriel + Claude</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-031 episode 1 dramatic question &amp;quot;when you discover you&amp;#x27;re fundamentally different, do you hide it or embrace it — even if it costs you everything you&amp;#x27;ve known?&amp;quot; contemporary parallels: lgbtq+ coming out, neurodivergent individuals, leaving abusive environments. session 5 story-structure story structure locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-031</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Story Structure</span>
+            </div>
+            <h3 class="card-title">Episode 1 Dramatic Question</h3>
+            <p class="card-summary">&quot;When you discover you&#x27;re fundamentally different, do you hide it or embrace it — even if it costs you everything you&#x27;ve known?&quot; Contemporary parallels: LGBTQ+ coming out, neurodivergent individuals, leaving abusive environments.</p>
+            <div class="card-meta">2025-11-08 &middot; Session 5 &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-032 episode 2: victory through grit (fire discovery) episode 2 = victory episode. five-phase fire discovery structure over two months. central question: &amp;quot;do you have grit to build when you fail 59 times?&amp;quot; partnership breaking point is the emotional core. only one celestial scene, after fire breakthrough. session 11-13 story-structure story structure locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-032</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Story Structure</span>
+            </div>
+            <h3 class="card-title">Episode 2: Victory Through Grit (Fire Discovery)</h3>
+            <p class="card-summary">Episode 2 = victory episode. Five-phase fire discovery structure over two months. Central question: &quot;Do you have grit to build when you fail 59 times?&quot; Partnership breaking point is the emotional core. Only ONE celestial scene, after fire breakthrough.</p>
+            <div class="card-meta">2025-11-11 &middot; Session 11-13 &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-033 episode 3: &amp;#x27;the first child&amp;#x27; — partnership differentiation central tension: partnership differentiation as pregnancy changes roles. &amp;quot;they used to be equal in everything. now she does what he cannot.&amp;quot; cliffhanger: baby&amp;#x27;s crying attracts predators on first night. two celestial appearances (mid-episode time jump + closing). session 14 story-structure story structure locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-033</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Story Structure</span>
+            </div>
+            <h3 class="card-title">Episode 3: &#x27;The First Child&#x27; — Partnership Differentiation</h3>
+            <p class="card-summary">Central tension: partnership differentiation as pregnancy changes roles. &quot;They used to be equal in everything. Now she does what he cannot.&quot; Cliffhanger: baby&#x27;s crying attracts predators on first night. Two celestial appearances (mid-episode time jump + closing).</p>
+            <div class="card-meta">2025-11-13 &middot; Session 14 &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-034 three-episode arc: courage → grit → growth ep 1: courage to choose yourself (identity, separation). ep 2: grit to build from nothing (innovation, perseverance). ep 3: growth to become more than you were (transformation, family). together: foundation of humanity = choice + creation + legacy. session 14 story-structure story structure locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-034</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Story Structure</span>
+            </div>
+            <h3 class="card-title">Three-Episode Arc: Courage → Grit → Growth</h3>
+            <p class="card-summary">Ep 1: Courage to choose yourself (identity, separation). Ep 2: Grit to build from nothing (innovation, perseverance). Ep 3: Growth to become more than you were (transformation, family). Together: Foundation of humanity = choice + creation + legacy.</p>
+            <div class="card-meta">2025-11-13 &middot; Session 14 &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-035 motif: &amp;#x27;then what?&amp;#x27; — the weight of choice every act of courage leads to &amp;quot;then what?&amp;quot; faith requires the first step, but building requires every step after. weaves through entire series. modern audiences paralyzed by choices — this says the uncertainty is normal. session 5 story-structure story structure locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-035</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Story Structure</span>
+            </div>
+            <h3 class="card-title">Motif: &#x27;Then What?&#x27; — The Weight of Choice</h3>
+            <p class="card-summary">Every act of courage leads to &quot;Then what?&quot; Faith requires the first step, but building requires every step after. Weaves through entire series. Modern audiences paralyzed by choices — this says the uncertainty is normal.</p>
+            <div class="card-meta">2025-11-08 &middot; Session 5 &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-036 motif: being fully human = divine partnership show don&amp;#x27;t preach. moments of intuition that prove right. stillness before action. results beyond what two people alone could achieve. partnership between them mirrors divine partnership. celestial perspective shows guidance they can&amp;#x27;t see. session 5 story-structure story structure locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-036</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Story Structure</span>
+            </div>
+            <h3 class="card-title">Motif: Being Fully Human = Divine Partnership</h3>
+            <p class="card-summary">Show don&#x27;t preach. Moments of intuition that prove right. Stillness before action. Results beyond what two people alone could achieve. Partnership between them mirrors divine partnership. Celestial perspective shows guidance they can&#x27;t see.</p>
+            <div class="card-meta">2025-11-08 &middot; Session 5 &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-037 andon and fonta fled at age 11 (not late teens) papers 63:3.1-3.2 explicitly state they fled at age 11. age 9: first serious discussion. almost two years later: actual departure. this strengthens the story — children&amp;#x27;s courage more extraordinary. episode 1 outline revised accordingly. session 7-8 (agent discovery) characters characters locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-037</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Characters</span>
+            </div>
+            <h3 class="card-title">Andon and Fonta Fled at Age 11 (Not Late Teens)</h3>
+            <p class="card-summary">Papers 63:3.1-3.2 explicitly state they fled at age 11. Age 9: first serious discussion. Almost two years later: actual departure. This STRENGTHENS the story — children&#x27;s courage more extraordinary. Episode 1 outline revised accordingly.</p>
+            <div class="card-meta">2025-11-08 &middot; Session 7-8 (Agent discovery) &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-038 father character represents entire tribe no need to track multiple tribe members. father loves them deeply (will die of grief when they leave). not the source of threat — the tribe is. tragic figure caught between paternal love and tribal loyalty. session 1 characters characters locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-038</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Characters</span>
+            </div>
+            <h3 class="card-title">Father Character Represents Entire Tribe</h3>
+            <p class="card-summary">No need to track multiple tribe members. Father LOVES them deeply (will die of grief when they leave). Not the source of threat — the tribe is. Tragic figure caught between paternal love and tribal loyalty.</p>
+            <div class="card-meta">2025-11-04 &middot; Session 1 &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-039 sontad born at age 13 — papers timeline honored papers 63:3.1: sontad born when they were ~13. episodes 2-3 cover the ~2 years between flight (age 11) and first child. 18 months from episode 2 ending to birth. session 14 characters characters locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-039</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Characters</span>
+            </div>
+            <h3 class="card-title">Sontad Born at Age 13 — Papers Timeline Honored</h3>
+            <p class="card-summary">Papers 63:3.1: Sontad born when they were ~13. Episodes 2-3 cover the ~2 years between flight (age 11) and first child. 18 months from Episode 2 ending to birth.</p>
+            <div class="card-meta">2025-11-13 &middot; Session 14 &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-040 intelligence shown through visual contrast show andon and fonta&amp;#x27;s superior intelligence visually: hafted weapon (tool-making), teaching failure (primate can&amp;#x27;t replicate), storm/shelter contrast (they&amp;#x27;re dry, tribe is soaked), personality in the eyes. never tell — always show the cognitive gap. writers room #1 characters characters active team">
+            <div class="card-header">
+                <span class="decision-id">DEC-040</span>
+                <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                <span class="badge domain-pill">Characters</span>
+            </div>
+            <h3 class="card-title">Intelligence Shown Through Visual Contrast</h3>
+            <p class="card-summary">Show Andon and Fonta&#x27;s superior intelligence visually: hafted weapon (tool-making), teaching failure (primate can&#x27;t replicate), storm/shelter contrast (they&#x27;re dry, tribe is soaked), personality in the eyes. Never tell — always show the cognitive gap.</p>
+            <div class="card-meta">2026-02-12 &middot; Writers Room #1 &middot; Team</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-041 pregnancy/birth approach: pg-13, faces and emotion birth is substantial but not graphic. focus on faces and emotion. appropriate for family viewing. &amp;quot;i do want to spend some time on this. this is a momentous event.&amp;quot; — gabriel. river bathing realization scene for pregnancy discovery. session 14 characters characters locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-041</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Characters</span>
+            </div>
+            <h3 class="card-title">Pregnancy/Birth Approach: PG-13, Faces and Emotion</h3>
+            <p class="card-summary">Birth is substantial but not graphic. Focus on faces and emotion. Appropriate for family viewing. &quot;I do want to spend some time on this. This is a momentous event.&quot; — Gabriel. River bathing realization scene for pregnancy discovery.</p>
+            <div class="card-meta">2025-11-13 &middot; Session 14 &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-042 two-layer source material rule layer 1 (sacred): everything explicitly in the papers is non-negotiable. layer 2 (creative license): fill gaps freely but document every instance. format: &amp;quot;creative license: [what invented] to illuminate [what revealed].&amp;quot; standard: &amp;quot;could this plausibly have happened? we don&amp;#x27;t know that it didn&amp;#x27;t.&amp;quot; session 6 process-workflow process locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-042</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Process</span>
+            </div>
+            <h3 class="card-title">Two-Layer Source Material Rule</h3>
+            <p class="card-summary">Layer 1 (Sacred): Everything explicitly in the Papers is non-negotiable. Layer 2 (Creative License): Fill gaps freely BUT document every instance. Format: &quot;CREATIVE LICENSE: [what invented] to illuminate [what revealed].&quot; Standard: &quot;Could this plausibly have happened? We don&#x27;t know that it didn&#x27;t.&quot;</p>
+            <div class="card-meta">2025-11-08 &middot; Session 6 &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-043 prep-then-collaborate method claude does prep work privately (mine papers, take notes, prepare questions). leads gabriel with targeted questions. gabriel discovers and reacts emotionally. synthesize together. wrong: present finished analysis. right: ask what makes his heart race. session 2 process-workflow process locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-043</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Process</span>
+            </div>
+            <h3 class="card-title">Prep-Then-Collaborate Method</h3>
+            <p class="card-summary">Claude does prep work privately (mine Papers, take notes, prepare questions). Leads Gabriel with targeted questions. Gabriel discovers and reacts emotionally. Synthesize together. WRONG: present finished analysis. RIGHT: ask what makes his heart race.</p>
+            <div class="card-meta">2025-11-05 &middot; Session 2 &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-044 3+1 team model cheryl sherman (lead writer), rick warren (story consultant / theological anchor), gabriel rymberg (producer / ai operator), claude (development engine). weekly thursday zoom meetings, 60 minutes. decide-build-review cycle. session 18 process-workflow process active gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-044</span>
+                <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                <span class="badge domain-pill">Process</span>
+            </div>
+            <h3 class="card-title">3+1 Team Model</h3>
+            <p class="card-summary">Cheryl Sherman (Lead Writer), Rick Warren (Story Consultant / Theological Anchor), Gabriel Rymberg (Producer / AI Operator), Claude (Development Engine). Weekly Thursday Zoom meetings, 60 minutes. Decide-build-review cycle.</p>
+            <div class="card-meta">2026-02-09 &middot; Session 18 &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-045 all meetings recorded and ai-summarized all writers room meetings recorded and transcribed (otter.ai). ai summarizes transcripts so no one takes manual notes. team exchanges materials asynchronously between meetings via email. writers room #1 process-workflow process active team">
+            <div class="card-header">
+                <span class="decision-id">DEC-045</span>
+                <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                <span class="badge domain-pill">Process</span>
+            </div>
+            <h3 class="card-title">All Meetings Recorded and AI-Summarized</h3>
+            <p class="card-summary">All Writers Room meetings recorded and transcribed (Otter.ai). AI summarizes transcripts so no one takes manual notes. Team exchanges materials asynchronously between meetings via email.</p>
+            <div class="card-meta">2026-02-12 &middot; Writers Room #1 &middot; Team</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-046 collaborative spirit: no ego about ideas &amp;quot;i am not a person that cares one iota if you use my idea or not. it&amp;#x27;s not important. the importance is doing a good script.&amp;quot; — cheryl. all ideas shared freely. cheryl prefers receiving written materials to react to rather than working from scratch. writers room #1 (cheryl) process-workflow process active team">
+            <div class="card-header">
+                <span class="decision-id">DEC-046</span>
+                <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                <span class="badge domain-pill">Process</span>
+            </div>
+            <h3 class="card-title">Collaborative Spirit: No Ego About Ideas</h3>
+            <p class="card-summary">&quot;I am not a person that cares one iota if you use my idea or not. It&#x27;s not important. The importance is doing a good script.&quot; — Cheryl. All ideas shared freely. Cheryl prefers receiving written materials to react to rather than working from scratch.</p>
+            <div class="card-meta">2026-02-12 &middot; Writers Room #1 (Cheryl) &middot; Team</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-047 pilot target: 50 pages, 10 weeks pilot screenplay target: ~50 pages over 10 weeks. four phases: phase 0 (foundation decisions), phase 1 (treatment/beat sheet), phase 2 (draft pages), phase 3 (polish). episode 1 &amp;quot;the awakening.&amp;quot; session 18 process-workflow process active gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-047</span>
+                <span class="badge" style="background:#0969da;color:#ffffff">ACTIVE</span>
+                <span class="badge domain-pill">Process</span>
+            </div>
+            <h3 class="card-title">Pilot Target: 50 Pages, 10 Weeks</h3>
+            <p class="card-summary">Pilot screenplay target: ~50 pages over 10 weeks. Four phases: Phase 0 (Foundation Decisions), Phase 1 (Treatment/Beat Sheet), Phase 2 (Draft Pages), Phase 3 (Polish). Episode 1 &quot;The Awakening.&quot;</p>
+            <div class="card-meta">2026-02-09 &middot; Session 18 &middot; Gabriel</div>
+        </div>
+        <div class="search-card hidden" data-search="dec-048 tree home: show consequence not construction morning after storm: they emerge dry, tribe is soaked. father&amp;#x27;s jealous reaction visible. &amp;quot;start with the bank robbery, not the planning.&amp;quot; save process sequences for new discoveries (fire), not past accomplishments. session 3 story-structure story structure locked gabriel">
+            <div class="card-header">
+                <span class="decision-id">DEC-048</span>
+                <span class="badge" style="background:#1a7f37;color:#ffffff">LOCKED</span>
+                <span class="badge domain-pill">Story Structure</span>
+            </div>
+            <h3 class="card-title">Tree Home: Show Consequence Not Construction</h3>
+            <p class="card-summary">Morning after storm: they emerge DRY, tribe is SOAKED. Father&#x27;s jealous reaction visible. &quot;Start with the bank robbery, not the planning.&quot; Save process sequences for NEW discoveries (fire), not past accomplishments.</p>
+            <div class="card-meta">2025-11-06 &middot; Session 3 &middot; Gabriel</div>
+        </div>
+  </div>
+  <div class="search-hint" id="no-results" style="display:none;">
+    No decisions match that search.
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+// Password gate
+const PASS_HASH = '89e381be86261296449f7ce949f32edc4adbdd2f';  // SHA-1 of password
+const gate = document.getElementById('gate');
+const app = document.getElementById('app');
+const gateInput = document.getElementById('gate-input');
+const gateError = document.getElementById('gate-error');
+
+async function sha1(str) {
+  const buf = await crypto.subtle.digest('SHA-1',
+    new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function checkPass() {
+  const hash = await sha1(gateInput.value);
+  if (hash === PASS_HASH) {
+    gate.classList.add('hidden');
+    app.classList.add('unlocked');
+    sessionStorage.setItem('ucu_auth', 'ok');
+    document.getElementById('search').focus();
+  } else {
+    gateError.textContent = 'Incorrect password';
+    gateInput.value = '';
+    gateInput.focus();
+  }
+}
+
+gateInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPass();
+  gateError.textContent = '';
+});
+
+// Auto-unlock if already authenticated this session
+if (sessionStorage.getItem('ucu_auth') === 'ok') {
+  gate.classList.add('hidden');
+  app.classList.add('unlocked');
+}
+</script>
+
+<script>
+const searchInput = document.getElementById('search');
+const searchWrap = document.getElementById('search-wrap');
+const clearBtn = document.getElementById('search-clear');
+const landing = document.getElementById('landing');
+const searchResults = document.getElementById('search-results');
+const searchGrid = document.getElementById('search-grid');
+const cards = Array.from(searchGrid.querySelectorAll('.search-card'));
+const noResults = document.getElementById('no-results');
+const resultCount = document.getElementById('result-count');
+
+function doSearch() {
+  const query = searchInput.value.toLowerCase().trim();
+
+  // Toggle clear button
+  searchWrap.classList.toggle('has-query', query.length > 0);
+
+  // Toggle views
+  if (!query) {
+    landing.classList.remove('hidden');
+    searchResults.classList.remove('active');
+    return;
+  }
+
+  landing.classList.add('hidden');
+  searchResults.classList.add('active');
+
+  let visible = 0;
+  cards.forEach(card => {
+    const match = card.dataset.search.includes(query);
+    card.classList.toggle('hidden', !match);
+    if (match) visible++;
+  });
+
+  noResults.style.display = visible === 0 ? 'block' : 'none';
+  resultCount.textContent = visible === 1
+    ? '1 decision found'
+    : `${visible} decisions found`;
+}
+
+searchInput.addEventListener('input', doSearch);
+
+clearBtn.addEventListener('click', () => {
+  searchInput.value = '';
+  doSearch();
+  searchInput.focus();
+});
+
+// Escape key clears search
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    searchInput.value = '';
+    doSearch();
+  }
+});
+</script>
+</body>
+</html>
