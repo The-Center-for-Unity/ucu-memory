@@ -363,6 +363,38 @@
     text-align: center; color: var(--text-muted);
     padding: 48px 24px; font-size: 14px;
   }
+
+  /* ---- Resources tab ---- */
+  .resource-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 8px; overflow: hidden;
+  }
+  .resource-card.hidden { display: none; }
+  .resource-header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px; cursor: pointer; transition: background 0.1s;
+    user-select: none;
+  }
+  .resource-header:hover { background: var(--surface2); }
+  .resource-icon { font-size: 24px; min-width: 36px; text-align: center; }
+  .resource-header-left { flex: 1; }
+  .resource-title { font-size: 15px; font-weight: 600; line-height: 1.3; }
+  .resource-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+  .resource-chevron {
+    font-size: 10px; color: var(--text-muted); transition: transform 0.2s;
+  }
+  .resource-card.open .resource-chevron { transform: rotate(180deg); }
+  .resource-card.open .resource-header {
+    border-bottom: 1px solid var(--border);
+  }
+  .resource-body {
+    display: none; padding: 0;
+  }
+  .resource-card.open .resource-body { display: block; }
+  .resource-content {
+    padding: 20px 24px 28px;
+    font-size: 14px; line-height: 1.65; color: var(--text);
+  }
 </style>
 </head>
 <body>
@@ -379,7 +411,7 @@
 
 <div class="header">
   <h1>UCU Project Memory</h1>
-  <div class="subtitle">Updated 2026-02-13 10:44</div>
+  <div class="subtitle">Updated 2026-02-16 09:04</div>
 </div>
 
 <div class="tab-bar">
@@ -388,6 +420,9 @@
   </button>
   <button class="tab-btn" data-tab="meetings">
     Meeting Notes<span class="tab-count">2</span>
+  </button>
+  <button class="tab-btn" data-tab="resources">
+    Resources<span class="tab-count">1</span>
   </button>
 </div>
 
@@ -1965,7 +2000,380 @@ Same day, same time, one week from now. Team members work independently and exch
         </div>
 </div>
 
+</div><!-- /panel-meetings -->
+
+<!-- ==================== RESOURCES TAB ==================== -->
+<div class="tab-panel" id="panel-resources">
+
+<div id="resource-list">
+  
+        <div class="resource-card" data-search="andon &amp; fonta core vocabulary (~50 concepts) ~50 core concepts (words + signs/gestures) at age 11 # andon &amp; fonta core vocabulary (~50 concepts)
+
+**target:** ~50 core concepts (words + signs/gestures) at age 11
+**source:** papers 62:5.7 - &quot;by the age of ten they had worked out an improved sign and w">
+            <div class="resource-header" onclick="this.parentElement.classList.toggle('open')">
+                <div class="resource-icon">&#128214;</div>
+                <div class="resource-header-left">
+                    <div class="resource-title">Andon &amp; Fonta Core Vocabulary (~50 Concepts)</div>
+                    <div class="resource-subtitle">~50 core concepts (words + signs/gestures) at age 11</div>
+                </div>
+                <span class="resource-chevron">&#9660;</span>
+            </div>
+            <div class="resource-body">
+                <div class="resource-content meeting-content">
+                    <h1>Andon &amp; Fonta Core Vocabulary (~50 Concepts)</h1>
+<p>
+<strong>Target:</strong> ~50 core concepts (words + signs/gestures) at age 11
+<br>
+<strong>Source:</strong> Papers 62:5.7 - &quot;by the age of ten they had worked out an improved sign and word language of almost half a hundred ideas&quot;
+</p>
+<hr>
+<h2>SURVIVAL NEEDS (Critical for Episodes 1-2)</h2>
+<table><thead><tr>
+<th>Concept</th>
+<th>Usage Context</th>
+<th>Form (Word/Sign/Both)</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Fire</strong></td>
+<td>&quot;We need fire&quot; - Episode 2 opening</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Danger</strong></td>
+<td>Animal threat, tribal threat</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Hungry</strong></td>
+<td>Constant state, drives hunting</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Cold</strong></td>
+<td>Nights getting colder, autumn coming</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Water</strong></td>
+<td>Finding sources, &quot;I&#x27;m thirsty&quot;</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Shelter</strong></td>
+<td>Finding refuge, &quot;safe place&quot;</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Food</strong></td>
+<td>General need, also &quot;I found food&quot;</td>
+<td>TBD</td>
+</tr>
+</tbody></table>
+<h2>RELATIONSHIPS &amp; IDENTITY</h2>
+<table><thead><tr>
+<th>Concept</th>
+<th>Usage Context</th>
+<th>Form (Word/Sign/Both)</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>You</strong></td>
+<td>Direct address to each other</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Me/I</strong></td>
+<td>Self-reference</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Us/We</strong></td>
+<td>&quot;We need to...&quot; partnership</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Together</strong></td>
+<td>Core to their bond</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Father</strong></td>
+<td>Their father, the tribe leader</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Mother</strong></td>
+<td>Their mother (lost before flight)</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Tribe</strong></td>
+<td>The people they left</td>
+<td>TBD</td>
+</tr>
+</tbody></table>
+<h2>ACTIONS (Physical)</h2>
+<table><thead><tr>
+<th>Concept</th>
+<th>Usage Context</th>
+<th>Form (Word/Sign/Both)</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Go</strong></td>
+<td>&quot;We must go&quot;</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Stay</strong></td>
+<td>&quot;Stay here&quot;</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Run</strong></td>
+<td>Fleeing, urgency</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Hide</strong></td>
+<td>Safety behavior</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Hunt</strong></td>
+<td>Getting food</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Eat</strong></td>
+<td>Consuming food</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Drink</strong></td>
+<td>Consuming water</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Sleep</strong></td>
+<td>Rest, &quot;we sleep now&quot;</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Look</strong></td>
+<td>&quot;Look at this!&quot; discovery</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Listen</strong></td>
+<td>Alert to danger</td>
+<td>TBD</td>
+</tr>
+</tbody></table>
+<h2>EMOTIONS &amp; STATES</h2>
+<table><thead><tr>
+<th>Concept</th>
+<th>Usage Context</th>
+<th>Form (Word/Sign/Both)</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Afraid/Fear</strong></td>
+<td>Constant emotion Episode 1-2</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Tired</strong></td>
+<td>Physical exhaustion</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Hurt/Pain</strong></td>
+<td>Injury, scarring</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Happy/Good</strong></td>
+<td>Success moments</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Bad</strong></td>
+<td>Danger, failure, wrong</td>
+<td>TBD</td>
+</tr>
+</tbody></table>
+<h2>DIRECTIONS &amp; SPACE</h2>
+<table><thead><tr>
+<th>Concept</th>
+<th>Usage Context</th>
+<th>Form (Word/Sign/Both)</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>North</strong></td>
+<td>Direction of travel (may be gesture)</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Up</strong></td>
+<td>Climbing, tree home</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Down</strong></td>
+<td>Descending, ground</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Here</strong></td>
+<td>This place</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>There</strong></td>
+<td>That place</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Far</strong></td>
+<td>Distance concept</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Close/Near</strong></td>
+<td>&quot;Too close to tribe&quot;</td>
+<td>TBD</td>
+</tr>
+</tbody></table>
+<h2>OBJECTS &amp; TOOLS</h2>
+<table><thead><tr>
+<th>Concept</th>
+<th>Usage Context</th>
+<th>Form (Word/Sign/Both)</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Stone</strong></td>
+<td>Tool-making, throwing</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Weapon</strong></td>
+<td>Andon&#x27;s hafted weapon</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Tree</strong></td>
+<td>Shelter, refuge</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Cave</strong></td>
+<td>Rock shelter Episode 2</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Sky</strong></td>
+<td>Weather observation</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Night</strong></td>
+<td>Time reference, danger time</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Day</strong></td>
+<td>Time reference, safe time</td>
+<td>TBD</td>
+</tr>
+</tbody></table>
+<h2>TIME CONCEPTS (Limited)</h2>
+<table><thead><tr>
+<th>Concept</th>
+<th>Usage Context</th>
+<th>Form (Word/Sign/Both)</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Now</strong></td>
+<td>Immediate</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Soon</strong></td>
+<td>Near future</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Later</strong></td>
+<td>Delayed time</td>
+<td>TBD</td>
+</tr>
+<tr>
+<td><strong>Before</strong></td>
+<td>Past reference</td>
+<td>TBD</td>
+</tr>
+</tbody></table>
+<h2>THEIR NAMES (Special)</h2>
+<table><thead><tr>
+<th>Concept</th>
+<th>Usage Context</th>
+<th>Form (Word/Sign/Both)</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Sonta-an</strong></td>
+<td>Andon - &quot;loved by father&quot;</td>
+<td>Spoken word</td>
+</tr>
+<tr>
+<td><strong>Sonta-en</strong></td>
+<td>Fonta - &quot;loved by mother&quot;</td>
+<td>Spoken word</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>NOTES ON USAGE</h2>
+<p>
+<strong>Heavy reliance on:</strong>
+</p>
+<ul>
+<li>Gesture and sign language</li>
+<li>Tone of voice (urgency, fear, joy)</li>
+<li>Facial expression</li>
+<li>Physical demonstration</li>
+<li>Pointing and showing</li>
+</ul>
+<p>
+<strong>Communication challenges we&#x27;ll show:</strong>
+</p>
+<ul>
+<li>Episode 2: How does Andon convey &quot;fire&quot; concept to Fonta?</li>
+<li>Abstract concepts harder than concrete objects</li>
+<li>Innovation = creating NEW signs/words for NEW ideas</li>
+</ul>
+<p>
+<strong>Papers reference (62:5.7):</strong>
+<br>
+&quot;Very early they learned to engage in verbal communication; by the age of ten they had worked out an improved sign and word language of almost half a hundred ideas and had greatly improved and expanded the crude communicative technique of their ancestors.&quot;
+</p>
+<hr>
+<h2>TO DEVELOP FURTHER:</h2>
+<ul>
+<li>Specific phonetic sounds for each word</li>
+<li>Corresponding signs/gestures</li>
+<li>How each word/concept evolved</li>
+<li>Which are VERBAL vs SIGN vs BOTH</li>
+<li>Teaching moments (showing kids these concepts in Episode 3)</li>
+</ul>
+<p>
+<strong>CURRENT COUNT:</strong> ~48 concepts listed
+<br>
+<strong>TARGET:</strong> ~50 total at age 11
+</p>
+                </div>
+            </div>
+        </div>
 </div>
+
+</div><!-- /panel-resources -->
 
 </div><!-- /app -->
 
@@ -2031,6 +2439,7 @@ tabBtns.forEach(btn => {
 function initTabs() {
   const hash = location.hash.replace('#', '');
   if (hash === 'meetings') switchTab('meetings');
+  else if (hash === 'resources') switchTab('resources');
   else switchTab('decisions');
 }
 
